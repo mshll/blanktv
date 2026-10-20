@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Accueil</string>
+    <string name="app_name">Blank TV</string>
     <string name="inputs">Sources</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Paramètres</string>
@@ -51,16 +51,9 @@
     <string name="card_state_new_label">Nouveau nom</string>
     <string name="launcher_settings">Paramètres du lanceur</string>
     <string name="columns_label">Applications par ligne</string>
-    <string name="animations_state">Animations : %1$s</string>
-    <string name="advanced_effects">Effets avancés</string>
-    <string name="advanced_effects_state">Effets avancés : %1$s</string>
-    <string name="advanced_effects_warning">Soulève les tuiles, agrandit les icônes et adoucit les transitions de couleur. Peut augmenter la mémoire utilisée selon le téléviseur.</string>
-    <string name="follow_theme">Suivre le thème (réinitialiser les choix)</string>
-    <string name="follow_theme_hint">Utilise la disposition et les animations du thème actuel ou les valeurs intégrées. Appliquer ou réinitialiser un thème efface aussi ces choix.</string>
     <string name="tv_settings">Paramètres du téléviseur</string>
     <string name="on">Activé</string>
     <string name="off">Désactivé</string>
-    <string name="enable">Activer</string>
     <string name="dock_edit">Modifier le dock</string>
     <string name="dock_edit_hint">Choisissez l\'emplacement du dock à changer et appuyez sur OK. Retour pour terminer.</string>
     <string name="dock_edit_pick_app">Choisissez maintenant l\'appli à y mettre et appuyez sur OK. Retour pour choisir un autre emplacement.</string>

@@ -1,0 +1,6 @@
+# Batch B: only after the cleanyourtv launcher owns Home and tvlauncher is disabled.
+com.google.android.tvrecommendations      # recommendation rows + notification panel; tvlauncher holds a provider ref into it
+org.droidtv.leanbackcustomizer            # Philips rows for the stock launcher
+com.google.android.leanbacklauncher       # old Android TV launcher
+com.google.android.leanbacklauncher.recommendations
+com.google.android.backdrop               # Google Ambient screensaver; the launcher has its own clock screensaver

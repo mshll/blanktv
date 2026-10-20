@@ -1,0 +1,8 @@
+com.shasha.tv
+com.lagradost.cloudstream3
+com.ottplay.ottplay
+com.tv.hdobox
+com.drama.simpleplayer
+com.phlox.tvwebbrowser
+cassian.telegram.ooa.pro
+ps.goldendeveloper.alnoor

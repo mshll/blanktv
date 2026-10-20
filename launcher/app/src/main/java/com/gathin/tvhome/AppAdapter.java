@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
@@ -23,7 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -189,7 +189,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final boolean showHomeSettings;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): no overshoot, shorter fades. */
     private final boolean reducedMotion;
+    private final boolean showNames;
     private final List<Entry> items = new ArrayList<>();
+    private final List<String> lastApps;
 
     AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
         this.ctx = ctx;
@@ -198,11 +200,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.favourites = cfg.dockApps;
         this.fillDock = cfg.fillDock;
         this.hidden = new HashSet<>(cfg.hiddenApps);
+        this.lastApps = Arrays.asList(ctx.getResources().getStringArray(R.array.last_apps));
         this.animations = cfg.animations;
         this.advancedEffects = cfg.animations && cfg.advancedEffects;
         this.showHomeSettings = cfg.showHomeSettingsShortcut;
         this.showLibrary = cfg.appLibrary;
         this.reducedMotion = cfg.reducedMotion;
+        this.showNames = Choices.showNames(ctx);
         this.rowsBelowDock = cfg.rowsBelowDock;
         this.dockTitle = cfg.dockTitle;
         this.dockRow = cfg.dockRow;
@@ -267,6 +271,12 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (fa < 0) return 1;
                 if (fb < 0) return -1;
                 return Integer.compare(fa, fb);
+            }
+            int la = lastApps.indexOf(a.pkg), lb = lastApps.indexOf(b.pkg);
+            if (la >= 0 || lb >= 0) {
+                if (la < 0) return -1;
+                if (lb < 0) return 1;
+                return Integer.compare(la, lb);
             }
             // Cards come right after the configured dock apps, before the alphabetical grid.
             boolean ca = a.kind == Entry.CARD, cb = b.kind == Entry.CARD;
@@ -344,6 +354,13 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         cardLp.width = w;
         cardLp.height = h;
         card.setLayoutParams(cardLp);
+        View ring = v.findViewById(R.id.ring);
+        ViewGroup.MarginLayoutParams ringLp = (ViewGroup.MarginLayoutParams) ring.getLayoutParams();
+        int gap = Math.round(Holder.RING_GAP_DP * density);
+        ringLp.width = w + 2 * gap;
+        ringLp.height = h + 2 * gap;
+        ringLp.topMargin = -gap;
+        ring.setLayoutParams(ringLp);
         View name = v.findViewById(R.id.name);
         ViewGroup.MarginLayoutParams nameLp = (ViewGroup.MarginLayoutParams) name.getLayoutParams();
         nameLp.width = w;
@@ -355,7 +372,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             v.setPadding(v.getPaddingLeft(), pad, v.getPaddingRight(), pad);
         }
         name.setLayoutParams(nameLp);
-        return new Holder(v, listener, animations, advancedEffects, reducedMotion);
+        return new Holder(v, listener, animations, reducedMotion, showNames);
     }
 
     @Override
@@ -379,13 +396,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         h.name.setText(e.name);
         h.name.setVisibility(dockRow && position < dockSize ? View.INVISIBLE : View.VISIBLE);   // the dock has no labels
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
-        h.name.setAlpha(focused ? 1f : 0f);
-        h.card.setScaleX(focused && animations ? focusScale() : 1f);
-        h.card.setScaleY(focused && animations ? focusScale() : 1f);
-        h.card.setTranslationY(focused && advancedEffects ? -4f * ctx.getResources().getDisplayMetrics().density : 0f);
-        h.card.setTranslationZ(focused && advancedEffects ? 8f * ctx.getResources().getDisplayMetrics().density : 0f);
-        h.banner.setScaleX(focused && advancedEffects ? 1.035f : 1f);
-        h.banner.setScaleY(focused && advancedEffects ? 1.035f : 1f);
+        h.name.setAlpha(focused && showNames ? 1f : 0f);
+        h.lift(focused);
+        h.setReorderLook(reordering);
         if (e.banner != null) {
             h.banner.setImageDrawable(e.banner);
             h.banner.setVisibility(View.VISIBLE);
@@ -465,6 +478,14 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         reordering = on;
     }
 
+    /** Turns the focus highlight of the tiles on screen blue while reordering, white otherwise. */
+    void showReorderLook(RecyclerView grid, boolean on) {
+        for (int i = 0; i < grid.getChildCount(); i++) {
+            RecyclerView.ViewHolder vh = grid.getChildViewHolder(grid.getChildAt(i));
+            if (vh instanceof Holder) ((Holder) vh).setReorderLook(on);
+        }
+    }
+
     boolean hasEmptySlots() {
         return emptySlots > 0;
     }
@@ -526,7 +547,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     float focusScale() {
-        return !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
+        return animations ? Holder.LIFT_SCALE : 1f;
     }
 
     /** A vivid colour sampled from the app's banner (or icon), cached per entry; a card's accent when it set one. */
@@ -588,28 +609,35 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     static final class Holder extends RecyclerView.ViewHolder {
+        /** tvOS lift: a small zoom, a soft shadow under the tile and a sheen across its top. */
+        static final float LIFT_SCALE = 1.07f;
+        private static final float LIFT_Z_DP = 18f, LIFT_Y_DP = -3f;
+        static final float RING_GAP_DP = 3f;
+        private static final float RING_DP = 2f, RING_REORDER_DP = 3f;
+        private static final int RING_COLOR = 0xD9FFFFFF, RING_REORDER_COLOR = 0xFF6EC1FF;
+
         final View card;
         final ImageView banner;
         final ImageView icon;
         final TextView label;
         final TextView name;
+        final View sheen;
+        final View ring;
         final boolean animations;
-        final boolean advancedEffects;
-        final boolean reducedMotion;
+        private final float density;
 
-        Holder(View v, TileListener listener, boolean animations, boolean advancedEffects,
-               boolean reducedMotion) {
+        Holder(View v, TileListener listener, boolean animations, boolean reducedMotion, boolean showNames) {
             super(v);
             card = v.findViewById(R.id.card);
             banner = v.findViewById(R.id.banner);
             icon = v.findViewById(R.id.icon);
             label = v.findViewById(R.id.label);
             name = v.findViewById(R.id.name);
+            sheen = v.findViewById(R.id.sheen);
+            ring = v.findViewById(R.id.ring);
             this.animations = animations;
-            this.advancedEffects = advancedEffects;
-            this.reducedMotion = reducedMotion;
+            density = v.getResources().getDisplayMetrics().density;
 
-            final float density = v.getResources().getDisplayMetrics().density;
             card.setOutlineProvider(new ViewOutlineProvider() {
                 @Override
                 public void getOutline(View view, Outline outline) {
@@ -629,51 +657,59 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             card.setOnFocusChangeListener((view, focused) -> {
                 view.animate().cancel();
-                banner.animate().cancel();
+                sheen.animate().cancel();
+                ring.animate().cancel();
                 name.animate().cancel();
-                float scale = !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
-                float s = focused ? scale : 1f;
+                float nameAlpha = focused && showNames ? 1f : 0f;
                 if (!animations) {
-                    view.setScaleX(1f);
-                    view.setScaleY(1f);
-                    view.setTranslationY(0f);
-                    view.setTranslationZ(0f);
-                    banner.setScaleX(1f);
-                    banner.setScaleY(1f);
-                    name.setAlpha(focused ? 1f : 0f);
+                    lift(focused);
+                    name.setAlpha(nameAlpha);
                     name.setTranslationY(0f);
-                } else if (reducedMotion) {
-                    view.animate().scaleX(s).scaleY(s)
-                            .translationY(focused && advancedEffects ? -4f * density : 0f)
-                            .translationZ(focused && advancedEffects ? 8f * density : 0f)
-                            .setDuration(focused ? 120 : 80)
-                            .setInterpolator(new DecelerateInterpolator())
-                            .withLayer().start();
-                    name.animate().alpha(focused ? 1f : 0f).setDuration(100).start();
-                    // Same place as the full motion's slide ends: the layout's -6dp is only its starting point, and
-                    // left there the name overlaps the zoomed tile.
-                    // Only on focus: snapping it back to -6dp while it fades out would jump it up over the tile.
-                    if (focused) name.setTranslationY(density * 4f);
                 } else {
+                    float s = focused ? LIFT_SCALE : 1f;
+                    int duration = reducedMotion ? (focused ? 120 : 80) : (focused ? 220 : 180);
                     view.animate().scaleX(s).scaleY(s)
-                            .translationY(focused && advancedEffects ? -4f * density : 0f)
-                            .translationZ(focused && advancedEffects ? 8f * density : 0f)
-                            .setDuration(advancedEffects ? (focused ? 220 : 170) : (focused ? 260 : 180))
-                            .setInterpolator(new OvershootInterpolator(focused ? (advancedEffects ? 0.7f : 1.6f) : 0f))
-                            .withLayer().start();
-                    if (advancedEffects) {
-                        banner.animate().scaleX(focused ? 1.035f : 1f).scaleY(focused ? 1.035f : 1f)
-                                .setDuration(280).start();
-                    }
-                    name.animate().alpha(focused ? 1f : 0f)
+                            .translationY(focused ? LIFT_Y_DP * density : 0f)
+                            .translationZ(focused ? LIFT_Z_DP * density : 0f)
+                            .setDuration(duration)
+                            .setInterpolator(new DecelerateInterpolator(2f))
+                            .start();
+                    sheen.animate().alpha(focused ? 1f : 0f).setDuration(duration).start();
+                    ring.animate().alpha(focused ? 1f : 0f).scaleX(s).scaleY(s)
+                            .translationY(focused ? LIFT_Y_DP * density : 0f)
+                            .setDuration(duration).setInterpolator(new DecelerateInterpolator(2f)).start();
+                    name.animate().alpha(nameAlpha)
                             .translationY(focused ? density * 4f : -density * 6f)
-                            .setDuration(220).start();
+                            .setDuration(duration).start();
                 }
                 int pos = getBindingAdapterPosition();
                 if (focused && listener != null && pos != RecyclerView.NO_POSITION) {
                     listener.onTileFocused(pos, view);
                 }
             });
+        }
+
+        /** The ring keeps the tile's corners at the gap's distance, so both curves stay concentric. */
+        void setReorderLook(boolean on) {
+            float stroke = (on ? RING_REORDER_DP : RING_DP) * density;
+            GradientDrawable ringShape = new GradientDrawable();
+            ringShape.setStroke(Math.round(stroke), on ? RING_REORDER_COLOR : RING_COLOR);
+            ringShape.setCornerRadius(cornerRadius(card.getLayoutParams().width, density) + RING_GAP_DP * density - stroke / 2f);
+            ring.setBackground(ringShape);
+        }
+
+        /** The lifted (or resting) state without animation. */
+        void lift(boolean focused) {
+            boolean on = focused && animations;
+            card.setScaleX(on ? LIFT_SCALE : 1f);
+            card.setScaleY(on ? LIFT_SCALE : 1f);
+            card.setTranslationY(on ? LIFT_Y_DP * density : 0f);
+            card.setTranslationZ(on ? LIFT_Z_DP * density : 0f);
+            sheen.setAlpha(focused ? 1f : 0f);
+            ring.setAlpha(focused ? 1f : 0f);
+            ring.setScaleX(on ? LIFT_SCALE : 1f);
+            ring.setScaleY(on ? LIFT_SCALE : 1f);
+            ring.setTranslationY(on ? LIFT_Y_DP * density : 0f);
         }
     }
 }

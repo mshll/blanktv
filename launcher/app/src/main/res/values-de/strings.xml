@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Home</string>
+    <string name="app_name">Blank TV</string>
     <string name="inputs">Quellen</string>
     <string name="wifi">WLAN</string>
     <string name="settings">Einstellungen</string>
@@ -28,16 +28,9 @@
     <string name="input_key_service_description">Öffnet die Quellenauswahl, wenn die Input-Taste der Fernbedienung gedrückt wird.</string>
     <string name="launcher_settings">Launcher-Einstellungen</string>
     <string name="columns_label">Apps pro Zeile</string>
-    <string name="animations_state">Animationen: %1$s</string>
-    <string name="advanced_effects">Erweiterte Effekte</string>
-    <string name="advanced_effects_state">Erweiterte Effekte: %1$s</string>
-    <string name="advanced_effects_warning">Hebt Kacheln an, vergrößert Symbole und glättet Farbübergänge. Kann den Speicherverbrauch erhöhen; die Wirkung hängt vom TV ab.</string>
-    <string name="follow_theme">Design übernehmen (TV-Auswahl zurücksetzen)</string>
-    <string name="follow_theme_hint">Verwendet Layout und Bewegung des aktuellen Designs oder der integrierten Einstellungen. Ein neues oder zurückgesetztes Design löscht die TV-Auswahl ebenfalls.</string>
     <string name="tv_settings">TV-Systemeinstellungen</string>
     <string name="on">Ein</string>
     <string name="off">Aus</string>
-    <string name="enable">Aktivieren</string>
     <string name="dock_edit">Dock bearbeiten</string>
     <string name="dock_edit_hint">Wähle den Dock-Platz, den du ändern willst, und drücke OK. Zurück zum Beenden.</string>
     <string name="dock_edit_pick_app">Wähle jetzt die App für diesen Platz und drücke OK. Zurück, um einen anderen Platz zu wählen.</string>

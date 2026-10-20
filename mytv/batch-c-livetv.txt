@@ -1,0 +1,9 @@
+# Batch C: Live TV / broadcast. Owner does not use Live TV. playtv, xtv, channels stay: HDMI runs through them.
+# Applied one at a time with a 30 s idle-logcat loop check after each.
+org.droidtv.euinstallertc                 # terrestrial/cable channel installer
+org.droidtv.euinstallersat                # satellite channel installer
+org.droidtv.teletext                      # teletext
+org.droidtv.epgdata                       # TV guide data
+org.droidtv.ci                            # CI+ module
+org.droidtv.nettvbrowser                  # HbbTV / Philips app browser
+com.vewd.core.browserui                   # Vewd browser engine behind it

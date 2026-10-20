@@ -1,0 +1,34 @@
+# Xiaomi MiTV-MSSP3 (machuca), Android TV 9 (SDK 28), firmware PI.4663. Batch A: factory bloat, no launcher dependency.
+# Based on examples/xiaomi-mitv-mssp3-android9. Kept: Live TV (tvcenter, tvinput*), Media Player (mediaexplorer),
+# mitv.service, hotkey dispatcher, remote service, Netflix (and netflixobserver, which the remote's Netflix button needs).
+# Telemetry and tracking
+com.miui.tv.analytics                     # Xiaomi analytics, ~68 MB resident
+com.xiaomi.statistic
+com.google.android.feedback               # Market Feedback Agent
+com.google.android.partnersetup           # partner referrer / attribution
+com.google.android.tv.bugreportsender     # bug report uploader
+com.google.android.syncadapters.calendar  # no calendar app
+com.google.android.syncadapters.contacts  # no contacts app
+com.google.android.sss.authbridge         # set-up-from-phone helper
+# PatchWall, content rows, sponsored rows
+com.mitv.tvhome.atv                       # PatchWall
+com.xm.webcontent
+com.xiaomi.floatingframe
+android.autoinstalls.config.xiaomi.amelie # Play auto-install of partner apps
+# Xiaomi background services
+com.xiaomi.mitv.tvmanager                 # "TV Manager" cleaner, ~48 MB; kills background apps
+com.xiaomi.mitv.updateservice             # firmware updates: re-enable to check for one
+# Unused features
+com.google.android.katniss                # Google Assistant; comes back at boot (see the example's header)
+com.google.android.speech.pumpkin         # hotword detection for the Assistant
+com.google.android.apps.mediashell        # Chromecast built-in; owner casts with AirReceiver
+com.android.printspooler                  # printing
+com.google.android.marvin.talkback        # TalkBack
+# Unused apps
+com.amazon.amazonvideo.livingroom         # Prime Video; netflixobserver may re-enable it at boot
+com.google.android.music                  # Play Music, shut down by Google
+com.mitv.videoplayer                      # Mi Video; re-enable if Media Player stops playing USB videos
+com.xiaomi.mimusic2
+com.mitv.gallery                          # Mi Gallery; Media Player still opens USB photos
+com.google.android.play.games
+com.google.android.videos                 # Play Movies & TV (already disabled on this firmware)

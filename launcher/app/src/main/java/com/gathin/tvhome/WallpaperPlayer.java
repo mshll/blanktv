@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -17,9 +18,18 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
-/** Displays and rotates a theme's local wallpaper images while Home is visible. */
+/**
+ * Displays and rotates a theme's local wallpaper images while Home is visible, and keeps a small blurred copy of
+ * the visible part (the frost) for glass surfaces to draw.
+ */
 final class WallpaperPlayer {
+    static final String ROTATION_PREFS = "wallpaper_rotation";
+    private static final int FROST_WIDTH = 96;
+    private static final int FROST_PASSES = 3;
+    private static final int FROST_RADIUS = 2;
+
     private final FrameLayout root;
     private final ImageView image;
     private final List<File> files;
@@ -33,18 +43,25 @@ final class WallpaperPlayer {
     private boolean closed;
     private boolean loading;
     private String displayed = "";
+    private Bitmap frost;
+    /** The frost of the wallpaper on Home, for glass surfaces outside it (popups, settings); null when there is none. */
+    private static Bitmap shown;
+    private Consumer<Bitmap> onFrost = f -> { };
 
     WallpaperPlayer(Context context, FrameLayout root, Config config) {
         this.root = root;
         files = new ArrayList<>(config.wallpapers);
-        interval = config.wallpaperRotationMinutes * 60_000L;
-        preferences = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);
+        String mode = Choices.wallpaperMode(context);
+        interval = Choices.FIXED.equals(mode) ? 0 : config.wallpaperRotationMinutes * 60_000L;
+        preferences = context.getSharedPreferences(ROTATION_PREFS, Context.MODE_PRIVATE);
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         width = metrics.widthPixels;
         height = metrics.heightPixels;
         image = new ImageView(context);
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        shown = null;
+        if (Choices.BLACK.equals(mode)) files.clear();
         if (config.wallpaperEnabled && !files.isEmpty()) {
             root.addView(image, 0, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -73,6 +90,8 @@ final class WallpaperPlayer {
             Bitmap bitmap = decode(first);
             if (bitmap != null) {
                 image.setImageBitmap(bitmap);
+                frost = frost(bitmap);
+                shown = frost;
                 displayed = first.getName();
                 if (!displayed.equals(previous)) {
                     preferences.edit().putString("image", displayed)
@@ -83,6 +102,19 @@ final class WallpaperPlayer {
             files.remove(first);   // unreadable or over 4K: try another, or keep the plain colour
             first = WallpaperRotation.pick(files, previous, random);
         }
+    }
+
+    /** The blurred visible wallpaper, screen-shaped and FROST_WIDTH wide; null without a wallpaper. */
+    Bitmap frost() {
+        return frost;
+    }
+
+    static Bitmap shownFrost() {
+        return shown;
+    }
+
+    void setOnFrost(Consumer<Bitmap> listener) {
+        onFrost = listener;
     }
 
     void start() {
@@ -113,6 +145,7 @@ final class WallpaperPlayer {
         loading = true;
         decoder.execute(() -> {
             Bitmap bitmap = decode(next);
+            Bitmap nextFrost = bitmap == null ? null : frost(bitmap);
             root.post(() -> {
                 loading = false;
                 if (closed || !active) {
@@ -126,6 +159,9 @@ final class WallpaperPlayer {
                     return;
                 }
                 image.setImageBitmap(bitmap);
+                frost = nextFrost;
+                shown = frost;
+                onFrost.accept(frost);
                 displayed = next.getName();
                 if (!displayed.equals(previous) || changed == 0) {
                     preferences.edit().putString("image", displayed)
@@ -133,6 +169,47 @@ final class WallpaperPlayer {
                 }
             });
         });
+    }
+
+    /** The part CENTER_CROP shows, shrunk to FROST_WIDTH and box blurred; drawn scaled up it reads as frosted glass. */
+    private Bitmap frost(Bitmap source) {
+        float scale = Math.max((float) width / source.getWidth(), (float) height / source.getHeight());
+        int visibleW = Math.round(width / scale), visibleH = Math.round(height / scale);
+        int frostH = Math.max(1, FROST_WIDTH * height / width);
+        Matrix shrink = new Matrix();
+        shrink.setScale((float) FROST_WIDTH / visibleW, (float) frostH / visibleH);
+        Bitmap small = Bitmap.createBitmap(source, (source.getWidth() - visibleW) / 2,
+                (source.getHeight() - visibleH) / 2, visibleW, visibleH, shrink, true);
+        int w = small.getWidth(), h = small.getHeight();
+        int[] pixels = new int[w * h];
+        small.getPixels(pixels, 0, w, 0, 0, w, h);
+        int[] scratch = new int[pixels.length];
+        for (int pass = 0; pass < FROST_PASSES; pass++) {
+            boxBlur(pixels, scratch, w, h, 1, w);
+            boxBlur(scratch, pixels, h, w, w, 1);
+        }
+        return Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888);
+    }
+
+    /**
+     * One box blur pass along lines of {@code length} pixels, {@code step} apart within a line and {@code stride}
+     * apart between lines; edges repeat the border pixel.
+     */
+    private static void boxBlur(int[] in, int[] out, int length, int lines, int step, int stride) {
+        int span = FROST_RADIUS * 2 + 1;
+        for (int line = 0; line < lines; line++) {
+            int base = line * stride;
+            for (int i = 0; i < length; i++) {
+                int r = 0, g = 0, b = 0;
+                for (int k = -FROST_RADIUS; k <= FROST_RADIUS; k++) {
+                    int c = in[base + Math.min(length - 1, Math.max(0, i + k)) * step];
+                    r += (c >> 16) & 0xFF;
+                    g += (c >> 8) & 0xFF;
+                    b += c & 0xFF;
+                }
+                out[base + i * step] = 0xFF000000 | (r / span) << 16 | (g / span) << 8 | (b / span);
+            }
+        }
     }
 
     private Bitmap decode(File file) {

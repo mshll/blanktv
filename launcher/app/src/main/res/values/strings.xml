@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Home</string>
+    <string name="app_name">Blank TV</string>
     <string name="inputs">Inputs</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Settings</string>
@@ -19,6 +19,7 @@
     <string name="not_available">Not available on this TV</string>
     <string name="cant_open">Can\'t open %1$s</string>
     <string name="date_format">EEEE  d MMMM</string>
+    <string name="date_format_short" translatable="false">EEE d MMM</string>
     <!-- Date next to the clock on Home; a locale can split it over two lines with \n. -->
     <string name="date_format_home" translatable="false">@string/date_format</string>
     <string name="stats_cpu">CPU %1$d%%</string>
@@ -28,15 +29,9 @@
     <string name="vpn">VPN</string>
     <string name="vpn_off">VPN off</string>
     <string name="home_settings">Choose default home</string>
-    <string name="home_settings_help">Select your original home to stop using CleanYourTV as Home, or CleanYourTV to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
+    <string name="home_settings_help">Select your original home to stop using Blank TV as Home, or Blank TV to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
     <string name="launcher_settings">Launcher settings</string>
     <string name="columns_label">Apps per row</string>
-    <string name="animations_state">Animations: %1$s</string>
-    <string name="advanced_effects">Advanced effects</string>
-    <string name="advanced_effects_state">Advanced effects: %1$s</string>
-    <string name="advanced_effects_warning">Adds a lifted tile, icon zoom and smooth colour transitions. May increase memory use; the actual difference depends on your TV.</string>
-    <string name="follow_theme">Follow theme (reset on-TV choices)</string>
-    <string name="follow_theme_hint">Uses the current theme or built-in layout and motion settings. Pushing or resetting a theme also clears your on-TV choices.</string>
     <string name="tv_settings">TV system settings</string>
     <string name="quick_picture">Display</string>
     <string name="quick_network">Network</string>
@@ -44,7 +39,6 @@
     <string name="quick_apps_hint">Re-enable</string>
     <string name="on">On</string>
     <string name="off">Off</string>
-    <string name="enable">Enable</string>
     <string name="input_key_service_description">Opens the input switcher when the remote\'s Input button is pressed.</string>
     <string name="home_key_name">Home button</string>
     <string name="home_key_description">Makes the remote\'s Home button open this launcher.</string>
@@ -88,6 +82,44 @@
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apps</item>
     </plurals>
+    <string name="settings_wallpaper">Wallpaper</string>
+    <string name="settings_clock">Clock</string>
+    <string name="settings_screensaver">Screensaver</string>
+    <string name="settings_home">Home screen</string>
+    <string name="settings_system">System</string>
+    <string name="settings_wallpaper_mode">Mode</string>
+    <string name="settings_wallpaper_rotate">Rotate</string>
+    <string name="settings_wallpaper_fixed">Fixed</string>
+    <string name="settings_wallpaper_black">Black</string>
+    <string name="settings_wallpaper_every">Change every</string>
+    <string name="settings_wallpaper_dim">Dim</string>
+    <string name="settings_wallpaper_dim_hint">Darkens the picture so the apps stand out</string>
+    <string name="settings_percent">%1$d%%</string>
+    <string name="settings_minutes">%1$d min</string>
+    <plurals name="settings_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <plurals name="settings_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="settings_never">Never</string>
+    <string name="settings_time_format">Time</string>
+    <string name="settings_12h">12-hour</string>
+    <string name="settings_24h">24-hour</string>
+    <string name="settings_date">Date</string>
+    <string name="settings_hidden">Hidden</string>
+    <string name="settings_screensaver_after">Start after</string>
+    <string name="settings_screensaver_no_permission">Couldn\'t change the delay: the launcher needs the Modify system settings permission</string>
+    <string name="settings_back_screensaver">Back starts screensaver</string>
+    <string name="settings_back_screensaver_hint">Press Back on the first app at the top of Home</string>
+    <string name="settings_screensaver_app">Choose screensaver</string>
+    <string name="settings_screensaver_now">Start now</string>
+    <string name="settings_show_names">App names</string>
+    <string name="settings_show_names_hint">Shown under the focused app</string>
+    <string name="settings_hide_apps">Hide or show apps</string>
+    <string name="settings_version">Blank TV %1$s</string>
     <!-- The greeting, then greeting_name: "Good morning, Mr. Trịnh". -->
     <string name="greeting_with_name">%1$s, %2$s</string>
 </resources>

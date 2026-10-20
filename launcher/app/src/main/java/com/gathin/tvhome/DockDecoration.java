@@ -1,15 +1,22 @@
 package com.gathin.tvhome;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-/** Draws the tvOS style lighter band behind the first (dock) row and adds a gap below it. */
+/**
+ * Draws the band behind the first (dock) row and adds a gap below it: frosted glass over the wallpaper when there is
+ * one, a plain lighter band otherwise.
+ */
 public class DockDecoration extends RecyclerView.ItemDecoration {
 
     private final int dockSize;
@@ -17,6 +24,12 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     private final Paint band = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
+    private final Paint frostPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final Paint veil = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint sheen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Matrix frostMatrix = new Matrix();
+    private final int[] location = new int[2];
+    private Bitmap frost;
 
     DockDecoration(int dockSize, float density) {
         this.dockSize = dockSize;
@@ -25,6 +38,17 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(density);
         edge.setColor(0x1FFFFFFF);
+        sheen.setColor(0x0FFFFFFF);
+    }
+
+    /**
+     * @param frost the blurred wallpaper, shaped like the screen (WallpaperPlayer.frost()), or null for the plain band
+     * @param dimPercent the wallpaper's dim, repeated over the frost so the glass is no brighter than its surround
+     */
+    void setFrost(Bitmap frost, int dimPercent) {
+        this.frost = frost;
+        frostPaint.setShader(frost == null ? null : new BitmapShader(frost, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+        veil.setColor((dimPercent * 255 / 100) << 24);
     }
 
     @Override
@@ -62,7 +86,18 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
         float pad = 14 * density;
         rect.inset(-pad, -pad);
         float radius = 26 * density;
-        c.drawRoundRect(rect, radius, radius, band);
+        if (frost == null) {
+            c.drawRoundRect(rect, radius, radius, band);
+        } else {
+            View screen = parent.getRootView();
+            parent.getLocationOnScreen(location);
+            frostMatrix.setScale((float) screen.getWidth() / frost.getWidth(), (float) screen.getHeight() / frost.getHeight());
+            frostMatrix.postTranslate(-location[0], -location[1]);
+            frostPaint.getShader().setLocalMatrix(frostMatrix);
+            c.drawRoundRect(rect, radius, radius, frostPaint);
+            c.drawRoundRect(rect, radius, radius, veil);
+            c.drawRoundRect(rect, radius, radius, sheen);
+        }
         c.drawRoundRect(rect, radius, radius, edge);
     }
 }

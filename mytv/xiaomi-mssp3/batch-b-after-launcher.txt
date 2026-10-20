@@ -1,0 +1,5 @@
+# Batch B: only after the Blank TV launcher owns Home and tvlauncher is disabled.
+com.google.android.tvrecommendations      # recommendation rows; tvlauncher holds a provider ref into it
+com.google.android.leanbacklauncher       # old Android TV launcher
+com.google.android.leanbacklauncher.recommendations
+com.google.android.backdrop               # Google Ambient screensaver, ~61 MB; Aerial Views replaces it

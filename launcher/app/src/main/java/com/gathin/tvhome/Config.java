@@ -2,6 +2,7 @@ package com.gathin.tvhome;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.Log;
@@ -210,6 +211,7 @@ final class Config {
             inputKeycodes = intArray(json, "input_key_keycodes", inputKeycodes);
             appKeys = stringList(json, "app_keys", appKeys);
         }
+        liveTv = firstInstalled(ctx, liveTv);
         // A theme push or reset invalidates choices made on the TV. On first use, remember the
         // current theme without clearing choices from an older launcher version.
         SharedPreferences choices = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
@@ -225,6 +227,8 @@ final class Config {
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
+        rotationMinutes = choices.getInt(Choices.WALLPAPER_MINUTES, rotationMinutes);
+        wallpaperDim = choices.getInt(Choices.WALLPAPER_DIM, wallpaperDim);
         List<File> wallpapers = new ArrayList<>();
         if (rotationMinutes > 0 && dir != null && wallpaperEnabled) {
             wallpapers.addAll(WallpaperRotation.images(new File(dir, "wallpapers")));
@@ -240,6 +244,22 @@ final class Config {
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaperEnabled, wallpaper,
                 wallpapers, rotationMinutes, wallpaperDim, applied,
                 festival, inputKeycodes, appKeys);
+    }
+
+    /** live_tv_package may list several packages, comma separated, for one build on TVs of different brands. */
+    private static String firstInstalled(Context ctx, String packages) {
+        String[] candidates = packages.split(",");
+        for (String candidate : candidates) {
+            String pkg = candidate.trim();
+            if (pkg.isEmpty()) continue;
+            try {
+                ctx.getPackageManager().getPackageInfo(pkg, 0);
+                return pkg;
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.d(TAG, "Live TV candidate not installed: " + pkg);
+            }
+        }
+        return candidates.length == 1 ? packages.trim() : "";
     }
 
     private static void syncThemeChoices(SharedPreferences choices, File dir, File config) {

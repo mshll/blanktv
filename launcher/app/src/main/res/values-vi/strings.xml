@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Màn hình chính</string>
+    <string name="app_name">Blank TV</string>
     <string name="inputs">Nguồn vào</string>
     <string name="wifi">Wi-Fi</string>
     <string name="settings">Cài đặt</string>
@@ -25,15 +25,9 @@
     <string name="vpn">VPN</string>
     <string name="vpn_off">VPN tắt</string>
     <string name="home_settings">Chọn màn hình chính mặc định</string>
-    <string name="home_settings_help">Chọn màn hình chính gốc để thôi dùng CleanYourTV, hoặc chọn CleanYourTV để dùng lại. Launcher gốc phải đang bật và TV phải có mục chọn màn hình chính; nếu launcher gốc đã bị tắt, hãy chạy script khôi phục trước.</string>
+    <string name="home_settings_help">Chọn màn hình chính gốc để thôi dùng Blank TV, hoặc chọn Blank TV để dùng lại. Launcher gốc phải đang bật và TV phải có mục chọn màn hình chính; nếu launcher gốc đã bị tắt, hãy chạy script khôi phục trước.</string>
     <string name="launcher_settings">Cài đặt launcher</string>
     <string name="columns_label">Số ứng dụng mỗi hàng</string>
-    <string name="animations_state">Hiệu ứng: %1$s</string>
-    <string name="advanced_effects">Hiệu ứng nâng cao</string>
-    <string name="advanced_effects_state">Hiệu ứng nâng cao: %1$s</string>
-    <string name="advanced_effects_warning">Thêm hiệu ứng ô nổi lên, phóng to biểu tượng và chuyển màu mượt. Có thể tốn thêm bộ nhớ; mức chênh lệch tùy từng TV.</string>
-    <string name="follow_theme">Theo theme (xóa lựa chọn trên TV)</string>
-    <string name="follow_theme_hint">Dùng bố cục và hiệu ứng của theme hiện tại hoặc mặc định. Đẩy hoặc đặt lại theme cũng xóa các lựa chọn bạn đã chọn trên TV.</string>
     <string name="tv_settings">Cài đặt hệ thống TV</string>
     <string name="quick_picture">Hiển thị</string>
     <string name="quick_network">Mạng</string>
@@ -41,7 +35,6 @@
     <string name="quick_apps_hint">Bật lại</string>
     <string name="on">Bật</string>
     <string name="off">Tắt</string>
-    <string name="enable">Bật</string>
     <string name="input_key_service_description">Mở bảng chọn nguồn vào khi bấm nút Input trên remote.</string>
     <string name="home_key_name">Nút Home</string>
     <string name="home_key_description">Cho nút Home trên remote mở launcher này.</string>

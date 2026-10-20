@@ -1,0 +1,12 @@
+com.shasha.tv
+com.livedrama.app
+com.ytv.player
+ps.goldendeveloper.alnoor
+com.phlox.tvwebbrowser
+com.mobisystems.fileman
+com.tcl.browser
+com.lagradost.cloudstream3
+ver3.ycntivi.off
+com.tv.hdobox
+com.ottplay.ottplay
+com.my.esheeq

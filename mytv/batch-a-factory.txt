@@ -1,0 +1,34 @@
+# Philips TPM191E, PH9M_EA_5599, Android TV 9 (PTT1.181130.001). Batch A: factory bloat, no launcher dependency.
+# Telemetry and tracking
+tv.inscape.tvclient.inscapeacr            # Inscape ACR: identifies what is on screen and reports it
+org.droidtv.candeebug                     # "DAC" analytics uploader
+org.droidtv.gel                           # metrics collector, shares candeebug's process
+org.droidtv.usagelogger                   # boot stats, keypress counts, panel telemetry
+com.google.android.feedback               # Market Feedback Agent
+com.google.android.partnersetup           # partner referrer / attribution
+com.google.android.tv.bugreportsender     # bug report uploader
+com.google.android.onetimeinitializer     # first-setup leftover
+com.google.android.syncadapters.calendar  # no calendar app
+com.google.android.syncadapters.contacts  # no contacts app
+com.google.android.sss.authbridge         # set-up-from-phone helper
+# Retail demo
+org.droidtv.demome                        # "Demo me" shop mode
+org.droidtv.sticker                       # e-sticker shop overlay
+# Philips promos
+org.droidtv.nettvrecommender              # "Top Picks" row
+org.droidtv.recommendation                # its backend, after the row
+org.droidtv.nettv.market                  # Smart TV Collection storefront
+org.droidtv.nettvapp1814                  # ARTE
+# Unused features
+com.google.android.katniss                # Google Assistant / voice search, remote mic button
+com.google.android.apps.mediashell        # Chromecast built-in; owner casts with AirReceiver
+org.droidtv.amazonalexa                   # Alexa
+org.droidtv.dlna                          # DLNA server/renderer
+com.phorus.playfi.tv                      # DTS Play-Fi (may re-enable itself at boot)
+com.android.printspooler                  # printing
+# Unused apps
+com.amazon.amazonvideo.livingroom         # Prime Video
+com.google.android.videos                 # Google TV / Play Movies
+com.google.android.youtube.tvmusic        # YouTube Music
+com.google.android.play.games             # Play Games
+com.google.android.marvin.talkback        # TalkBack
